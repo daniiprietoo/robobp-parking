@@ -48,20 +48,20 @@ def main():
         while not params.get("stop", False):
             parking_state = params.get("parking_state", "scanning")
 
-            if executor.should_replan(current_plan):
-                replan_reason = params.get("replan_reason", None)
-                print(f"[Main] Replanning due to: {replan_reason}")
+            # if executor.should_replan(current_plan):
+            #     replan_reason = params.get("replan_reason", None)
+            #     print(f"[Main] Replanning due to: {replan_reason}")
 
-                params.set("replan_needed", False)
-                params.set("replan_reason", None)
+            #     params.set("replan_needed", False)
+            #     params.set("replan_reason", None)
 
-                params.set("parking_state", "planning")
+            #     params.set("parking_state", "planning")
 
-                current_plan = planner.replan(current_plan, params, replan_reason)
-                params.set("current_plan", current_plan)
-                params.set("current_step_index", 0)
+            #     current_plan = planner.replan(current_plan, params, replan_reason)
+            #     params.set("current_plan", current_plan)
+            #     params.set("current_step_index", 0)
 
-                print("[Main] New plan created.")
+            #     print("[Main] New plan created.")
 
             if current_plan is None:
                 if parking_state == "scanning":
@@ -198,7 +198,7 @@ def main():
                         params.set("parking_state", "done")
                         params.set("stop", True)
                 current_plan = None
-        time.sleep(0.1)
+            time.sleep(0.5)
 
     except KeyboardInterrupt:
         print("KeyboardInterrupt detected, stopping all behaviors...")

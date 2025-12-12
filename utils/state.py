@@ -95,3 +95,16 @@ class StateManager:
                 if i.id == self._state["target_spot"]:
                     return i
             return None
+
+    def invert_sides(self):
+        """Invert the side ('left' <-> 'right') of all detected spots."""
+        with self._lock:
+            for i, spot in enumerate(self._state["parking_spots"]):
+                new_side = "right" if spot.side == "left" else "left"
+                self._state["parking_spots"][i] = Spot(
+                    id=spot.id,
+                    position=spot.position,
+                    timestamp=spot.timestamp,
+                    occupied=spot.occupied,
+                    side=new_side,
+                )

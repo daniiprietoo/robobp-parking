@@ -7,6 +7,7 @@ from threading import Thread
 import time
 from robobopy.Robobo import Robobo
 
+from utils.config import LOOP_DELAY
 from utils.state import StateManager
 
 
@@ -43,11 +44,12 @@ class Behaviour(Thread):
         ):  # Loop until the mission is marked as complete
             # Wait until this behavior takes control or the mission ends
             while not self.take_control() and not self.params.get("stop", False):
-                time.sleep(0.01)  # Small delay to reduce CPU usage
+                time.sleep(LOOP_DELAY)  # Small delay to reduce CPU usage
             if not self.params.get(
                 "stop", False
             ):  # Perform the action if the mission is still ongoing
                 self.action()
+            time.sleep(LOOP_DELAY)  # Small delay before the next check
 
     # Property to get the suppression state
     @property

@@ -1,5 +1,7 @@
 from typing import Any, Optional
 
+from utils.state import StateManager
+
 
 class Plan:
 
@@ -95,7 +97,7 @@ class ParkingPlanner:
 
     @staticmethod
     def replan(
-        current_plan: Optional[Plan], current_state: dict[str, Any], reason: str = ""
+        current_plan: Optional[Plan], current_state: StateManager, reason: str = ""
     ) -> Plan:
         target_spot = current_state.get("target_spot")
 

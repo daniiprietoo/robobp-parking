@@ -1,5 +1,6 @@
 from utils.planner import Plan
 from utils.state import StateManager
+from utils.config import ACTION_TIMEOUT, LOOP_DELAY
 from robobopy.Robobo import Robobo
 import time
 
@@ -46,7 +47,7 @@ class Executor:
                     print("[Executor] Replanning due to step failure.")
                     return False
 
-            time.sleep(0.1)
+            time.sleep(LOOP_DELAY)
 
         print("[Executor] Plan execution complete.")
         return True
@@ -59,7 +60,7 @@ class Executor:
         self.state_manager.set("current_action_params", params)
         self.state_manager.set("current_action_status", "executing")
 
-        timeout = 180
+        timeout = ACTION_TIMEOUT
 
         start_time = time.time()
 
@@ -78,7 +79,6 @@ class Executor:
                 return False
 
             status = self.state_manager.get("current_action_status")
-            print(f"[Executor] DEBUG: action={action}, status={status}")  # TEMP
 
             if status == "completed":
                 print(f"[Executor] Action '{action}' completed successfully.")
@@ -92,7 +92,7 @@ class Executor:
                 print(f"[Executor] Replanning triggered during action '{action}'.")
                 return False
 
-            time.sleep(0.1)
+            time.sleep(0.5)
 
     def should_replan(self, plan: Plan) -> bool:
         return self.state_manager.get("replan_needed", False)
