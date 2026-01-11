@@ -1,46 +1,32 @@
-"""
-Constants and configuration values for the parking robot project.
-Centralized location for all magic numbers and settings.
-"""
-
-# =============================================================================
 # MOVEMENT SPEEDS
-# =============================================================================
-SPEED_SLOW = 5
+SPEED_SLOW = 3
 SPEED_MEDIUM = 7
 SPEED_NORMAL = 10
 SPEED_FAST = 14
 
-# =============================================================================
 # TIMING (in seconds)
-# =============================================================================
 SPEECH_WAIT_TIME = 2
 LOOP_DELAY = 0.1  # Delay for behavior/executor loops to reduce CPU and message rate
-REVERSE_DURATION = 4
+REVERSE_DURATION = 3.5
 STRAIGHTEN_DURATION = 2
 TURNING_TIME = 7.3
 
-# =============================================================================
+# PARKING
+FAST_WHEEL_SPEED = 17
+SLOW_WHEEL_SPEED = 5
 # CAMERA POSITIONS (Pan/Tilt in degrees)
-# =============================================================================
 PAN_CENTER = 0
 PAN_LEFT = -90
 PAN_RIGHT = 90
-TILT_CENTER = 90
+TILT_CENTER = 80
 PAN_MOVEMENT_SPEED = 100  # Speed for pan/tilt movements
 
-# =============================================================================
 # DISTANCE THRESHOLDS
-# =============================================================================
-TARGET_DISTANCE_TO_PILLAR = 60
+TARGET_DISTANCE_TO_PILLAR = 900
 QR_CENTER_TOLERANCE = 30
 
-# =============================================================================
-# TIMEOUTS (in seconds)
-# =============================================================================
+# TIMEOUTS
 ACTION_TIMEOUT = 180
 
-# =============================================================================
 # DEFAULT VALUES
-# =============================================================================
 DEFAULT_SIDE = "left"

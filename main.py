@@ -18,7 +18,7 @@ import time
 
 def main():
     # Create a Robobo object and connect to the robot
-    robobo = Robobo("localhost")
+    robobo = Robobo("192.168.1.48")
     robobo.connect()
 
     # Dictionary to share parameters between behaviors
@@ -71,6 +71,7 @@ def main():
                     params.set("current_plan", current_plan)
                     params.set("current_step_index", 0)
 
+            # Handle user input after scanning
             if parking_state == "waiting_for_input" or ():
                 print("[Main] Waiting for user to select parking spot...")
                 spots = params.get_detected_spots()
@@ -132,7 +133,7 @@ def main():
                             time.sleep(2)
                             continue
 
-            # Create parking after user input
+            # Create parking plan after user input
             if params.get("target_spot") and parking_state == "planning":
                 target_spot_id = params.get("target_spot")
                 current_plan = planner.create_parking_plan(target_spot_id)
@@ -147,6 +148,8 @@ def main():
                         "[Main] Parking plan steps: ",
                         [step["action"] for step in current_plan.steps],
                     )
+
+            # Execute current plan
             if (
                 current_plan
                 and not current_plan.is_complete()
@@ -170,13 +173,7 @@ def main():
                         params.set("stop", True)
                         break
 
-            if (
-                current_plan
-                and not current_plan.is_complete()
-                and parking_state in ["scanning", "executing"]
-            ):
-                executor.execute_plan(current_plan)
-
+            # Handle plan completion
             if current_plan and current_plan.is_complete():
                 plan_actions = [step["action"] for step in current_plan.steps]
                 target_spot = params.get("target_spot")
@@ -207,6 +204,8 @@ def main():
     finally:
         print("Stopping all behaviors...")
         params.set("stop", True)
+        robobo.movePanTo(0, 20, False)
+        robobo.stopMotors()
         # Wait for all threads to finish
         # This ensures that all behaviors complete their cleanup before exiting
         for thread in threads:

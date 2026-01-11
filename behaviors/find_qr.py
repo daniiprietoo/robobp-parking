@@ -19,13 +19,11 @@ class FindQR(Behaviour):
     """
 
     def __init__(self, robot, supress_list, params: StateManager):
-        # Initialize the GoToWall behavior
         super().__init__(robot, supress_list, params)
         self.rotonda_check_interval = 3
         self.speed = SPEED_SLOW
         self._is_moving = False
 
-    # Method that defines when the behavior should take control
     def take_control(self) -> bool:
         if not self.supress:
             current_action = self.params.get("current_action")
@@ -124,9 +122,9 @@ class FindQR(Behaviour):
                     self.supress = True
                     return
 
-            self.robot.wait(0.2)
+            self.robot.wait(0.1)
 
-        # 4) If we exit the while without success
+        # 4) exit the while without success
         print("[FindQR] Target QR not found during approach or behavior stopped.")
         self.params.set("current_action_status", "failed")
         self.robot.stopQrTracking()
@@ -136,7 +134,6 @@ class FindQR(Behaviour):
         print("[FindQR] Starting 180-degree turn...")
 
         # Rotate left wheel backward, right wheel forward to turn left
-        # Speed: positive = forward, negative = backward
         turn_speed = self.speed
         self.robot.moveWheelsByTime(-turn_speed, turn_speed, TURNING_TIME, True)
         self.params.invert_sides()
@@ -152,6 +149,8 @@ class FindQR(Behaviour):
 
         while True:
             qr = self.robot.readQR()
+
+            # Check distance and centering
             if qr and qr.distance > 0:
                 print(f"Current distance to pillar: {qr.distance} cm")
                 if qr.distance >= target_distance:
@@ -168,17 +167,19 @@ class FindQR(Behaviour):
                         self.robot.wait(0.2)
                         continue
 
+            # if not centered, perform S-curve to center
             print("Performing S-curve maneuver to get closer to pillar...")
             self._is_moving = False
             if side == "left":
-                self.robot.moveWheelsByTime((-7), (-2), 2, True)
-                self.robot.moveWheelsByTime((-2), (-7), 2, True)
+                self.robot.moveWheelsByTime((-9), (-2), 2, True)
+                self.robot.moveWheelsByTime((-2), (-9), 2, True)
             else:
-                self.robot.moveWheelsByTime((-2), (-7), 2, True)
-                self.robot.moveWheelsByTime((-7), (-2), 2, True)
+                self.robot.moveWheelsByTime((-2), (-9), 2, True)
+                self.robot.moveWheelsByTime((-9), (-2), 2, True)
 
             print("Moving forward until centered...")
 
+            # Move forward until centered
             if not self._is_moving:
                 self.robot.moveWheels(self.speed, self.speed)
                 self._is_moving = True
@@ -190,7 +191,7 @@ class FindQR(Behaviour):
                         self._is_moving = False
                         self.robot.stopMotors()
                         break
-                self.robot.wait(0.2)
+                self.robot.wait(0.1)
 
             if qr and qr.distance >= target_distance:
                 print("Reached target distance to pillar after adjustments.")
@@ -201,7 +202,7 @@ class FindQR(Behaviour):
 
     def _qrIsCentered(self, tolerance=QR_CENTER_TOLERANCE):
         """Check if the QR code is centered within a tolerance"""
-        center = 300  # Assuming 600px width
+        center = 200  # Assuming 600px width
         qr = self.robot.readQR()
         if qr and qr.distance > 0:
             print(f"QR X position: {qr.x} cm")
@@ -209,6 +210,9 @@ class FindQR(Behaviour):
         return False
 
     def _get_side(self):
+        """
+        Determine the side ('left' or 'right') of the target parking spot.
+        """
         target_spot_info = self.params.get_target_spot_info()
         if target_spot_info is not None:
             return target_spot_info.side  # 'left' or 'right'
@@ -219,6 +223,7 @@ class FindQR(Behaviour):
             return "left"  # Default to left if not found
 
     def _rotonda_check(self):
+        """Periodic check for 'rotonda' QR code"""
         self.robot.movePanTo(0, PAN_MOVEMENT_SPEED, True)
 
         rotonda = False

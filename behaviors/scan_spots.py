@@ -6,6 +6,7 @@ from behaviors.behaviors import Behaviour
 from robobopy.Robobo import Robobo
 from utils.config import (
     SPEED_MEDIUM,
+    SPEED_SLOW,
     TILT_CENTER,
     PAN_CENTER,
     PAN_MOVEMENT_SPEED,
@@ -17,7 +18,7 @@ class ScanSpots(Behaviour):
     def __init__(self, robot: Robobo, supress_list, params: StateManager):
         super().__init__(robot, supress_list, params)
 
-        self.max_spots = 8  # Maximum number of parking spots to scan
+        self.max_spots = 2  # Maximum number of parking spots to scan
 
     def take_control(self) -> bool:
         current_action = self.params.get("current_action")
@@ -42,22 +43,43 @@ class ScanSpots(Behaviour):
 
         self.robot.moveTiltTo(TILT_CENTER, PAN_MOVEMENT_SPEED, True)
 
-        speed = SPEED_MEDIUM
+        speed = SPEED_SLOW
         self.robot.moveWheels(speed, speed)
         self.robot.startQrTracking()
-        pan_positions = [70, -70]
+        pan_positions = [90, -90]
         current_pan_index = 0
+        self.robot.movePanTo(
+            pan_positions[current_pan_index], PAN_MOVEMENT_SPEED, False
+        )
 
+        current_time_pan_move = time.time()
+
+        iteration = 0
         while (
             not self.stopped()
             and len(self.params.get_detected_spots()) < self.max_spots
             and self.params.get("current_action") == "scan_spots"
         ):
-            pan_angle = pan_positions[current_pan_index]
-            self.robot.movePanTo(pan_angle, PAN_MOVEMENT_SPEED, True)
+            # pan_angle = pan_positions[current_pan_index]
+            # current_angle = self.robot.readPanPosition()
+            # print(f"Current pan angle: {current_angle}, Target pan angle: {pan_angle}")
+            # if abs(current_angle - pan_angle) > 2:
+            #     pass
+            # else:
+            #     current_pan_index = (current_pan_index + 1) % len(pan_positions)
+            #     pan_angle = pan_positions[current_pan_index]
+            #     self.robot.movePanTo(pan_angle, PAN_MOVEMENT_SPEED, False)
+
+            # Every 2 seconds, move Pan to opposite side
+            if time.time() - current_time_pan_move > 4:
+                current_pan_index = (current_pan_index + 1) % len(pan_positions)
+                pan_angle = pan_positions[current_pan_index]
+                self.robot.movePanTo(pan_angle, PAN_MOVEMENT_SPEED, False)
+                current_time_pan_move = time.time()
+
             qr = self.robot.readQR()
             print(
-                f"QR read: id={qr.id if qr else None}, distance={qr.distance if qr else None}"
+                f"QR read: id={qr.id if qr else None}, distance={qr.distance if qr else None}, data={qr.p1}, {qr.p2}, {qr.p3}"
             )  # Debug
 
             if qr and qr.distance > 0:
@@ -77,14 +99,15 @@ class ScanSpots(Behaviour):
                     self.params.add_detected_spot(spot)
 
                     print(f"Found spot {spot_id}: {spot}")
-                    
+
                     self.robot.moveWheels(speed, speed)  # Continue moving forward
                 else:
                     print(f"Spot {spot_id} already recorded.")
 
+            print(f"Scan iteration {iteration} complete.")
+            iteration += 1
             # Add a stop condition if needed
-            current_pan_index = (current_pan_index + 1) % len(pan_positions)
-            self.robot.wait(0.2)
+            self.robot.wait(0.1)
 
         self.robot.stopMotors()
         self.robot.movePanTo(PAN_CENTER, PAN_MOVEMENT_SPEED, True)
@@ -95,17 +118,15 @@ class ScanSpots(Behaviour):
         self.robot.stopQrTracking()
         self.supress = True
 
-        
     def is_ocuppied(self, spot_id: str, direction: int) -> bool:
         self.robot.startObjectRecognition()
         self.robot.stopMotors()
         self.robot.sayText(f"Found parking spot {spot_id}", True)
-        time.sleep(0.3)  # Allow time for the message to be spoken
-        self.robot.movePanTo(direction * -120, PAN_MOVEMENT_SPEED, True)
+        self.robot.movePanTo(direction * -120, PAN_MOVEMENT_SPEED)
         time.sleep(1)  # Allow time for the pan movement to complete
         obj = self.robot.readDetectedObject()
 
-        self.robot.movePanTo(PAN_CENTER, PAN_MOVEMENT_SPEED, True)
+        self.robot.movePanTo(direction * 90, PAN_MOVEMENT_SPEED, True)
 
         self.robot.stopObjectRecognition()
         print(f"Detected object: {obj.label}")

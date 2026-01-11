@@ -64,12 +64,12 @@ class Executor:
 
         start_time = time.time()
 
+        # Needed to handle 'wait_user_input' action to pause execution
         if action == "wait_user_input":
             print(
                 "[Executor] Entering wait_user_input step; returning to main for user input."
             )
             self.state_manager.set("current_action_status", "waiting_for_input")
-            # Indicate overall parking state
             self.state_manager.set("parking_state", "waiting_for_input")
             return "waiting_for_input"
 

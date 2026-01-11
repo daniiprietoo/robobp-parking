@@ -3,7 +3,9 @@ from behaviors.behaviors import Behaviour
 from robobopy.Robobo import Robobo
 from utils.config import (
     DEFAULT_SIDE,
+    FAST_WHEEL_SPEED,
     REVERSE_DURATION,
+    SLOW_WHEEL_SPEED,
     SPEECH_WAIT_TIME,
     SPEED_NORMAL,
     STRAIGHTEN_DURATION,
@@ -29,7 +31,6 @@ class Parking(Behaviour):
             return current_action in ["reverse_entry", "final_adjustment", "straighten"]
         return False
 
-    # Method that defines what the behavior does
     def action(self):
         self.supress = False
         self.suppress_others()
@@ -38,7 +39,7 @@ class Parking(Behaviour):
             "forward" if self.params.get("rotonda_detected") else "reverse"
         )
         try:
-            print("----> control: Parking")  # Log activation
+            print("----> control: Parking")
             current_action = self.params.get("current_action")
 
             self.params.set("current_action_status", "executing")
@@ -82,13 +83,13 @@ class Parking(Behaviour):
         # self.robot.moveWheelsByTime(5, 5, 0.5)
         # Start reversing depending on side
         if side == DEFAULT_SIDE:
-            self.robot.moveWheelsByTime(-14, -5, REVERSE_DURATION, True)
-            self.robot.moveWheelsByTime(-10, -10, 0.5, True)
-            self.robot.moveWheelsByTime(-5, -14, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(-FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(-10, -10, 0.8, True)
+            self.robot.moveWheelsByTime(-SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True)
         else:
-            self.robot.moveWheelsByTime(-5, -14, REVERSE_DURATION, True)
-            self.robot.moveWheelsByTime(-10, -10, 0.5, True)
-            self.robot.moveWheelsByTime(-14, -5, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(-SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(-10, -10, 0.8, True)
+            self.robot.moveWheelsByTime(-FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
         self.params.set("current_action_status", "completed")
 
     def _forward_entry(self):
@@ -99,17 +100,18 @@ class Parking(Behaviour):
 
         # Start moving forward depending on side
         if side == DEFAULT_SIDE:
-            self.robot.moveWheelsByTime(14, 5, REVERSE_DURATION, True)
-            self.robot.moveWheelsByTime(10, 10, 0.5, True)
-            self.robot.moveWheelsByTime(5, 14, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(10, 10, 0.8, True)
+            self.robot.moveWheelsByTime(SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True)
         else:
-            self.robot.moveWheelsByTime(5, 14, REVERSE_DURATION, True)
-            self.robot.moveWheelsByTime(10, 10, 0.5, True)
-            self.robot.moveWheelsByTime(14, 5, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(10, 10, 0.8, True)
+            self.robot.moveWheelsByTime(FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
         self.params.set("current_action_status", "completed")
 
     def _straighten(self):
-        self.robot.sayText("Straightening the robot", True)
+        """Currently doees nothing"""
+        # self.robot.sayText("Straightening the robot", True)
         print("[Parking] Straightening the robot")
 
         self.params.set("current_action_status", "completed")

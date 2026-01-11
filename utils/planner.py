@@ -95,6 +95,7 @@ class ParkingPlanner:
 
         return Plan(steps)
 
+    # Not used currently, but could be useful for replanning
     @staticmethod
     def replan(
         current_plan: Optional[Plan], current_state: StateManager, reason: str = ""
