@@ -7,12 +7,9 @@ from utils.config import (
     REVERSE_DURATION,
     SLOW_WHEEL_SPEED,
     SPEECH_WAIT_TIME,
-    SPEED_NORMAL,
-    STRAIGHTEN_DURATION,
 )
 import time
 from utils.state import StateManager
-from robobopy.utils.IR import IR
 
 
 class Parking(Behaviour):
@@ -83,13 +80,21 @@ class Parking(Behaviour):
         # self.robot.moveWheelsByTime(5, 5, 0.5)
         # Start reversing depending on side
         if side == DEFAULT_SIDE:
-            self.robot.moveWheelsByTime(-FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                -FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True
+            )
             self.robot.moveWheelsByTime(-10, -10, 0.8, True)
-            self.robot.moveWheelsByTime(-SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                -SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True
+            )
         else:
-            self.robot.moveWheelsByTime(-SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                -SLOW_WHEEL_SPEED, -FAST_WHEEL_SPEED, REVERSE_DURATION, True
+            )
             self.robot.moveWheelsByTime(-10, -10, 0.8, True)
-            self.robot.moveWheelsByTime(-FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                -FAST_WHEEL_SPEED, -SLOW_WHEEL_SPEED, REVERSE_DURATION, True
+            )
         self.params.set("current_action_status", "completed")
 
     def _forward_entry(self):
@@ -100,13 +105,21 @@ class Parking(Behaviour):
 
         # Start moving forward depending on side
         if side == DEFAULT_SIDE:
-            self.robot.moveWheelsByTime(FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True
+            )
             self.robot.moveWheelsByTime(10, 10, 0.8, True)
-            self.robot.moveWheelsByTime(SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True
+            )
         else:
-            self.robot.moveWheelsByTime(SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                SLOW_WHEEL_SPEED, FAST_WHEEL_SPEED, REVERSE_DURATION, True
+            )
             self.robot.moveWheelsByTime(10, 10, 0.8, True)
-            self.robot.moveWheelsByTime(FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True)
+            self.robot.moveWheelsByTime(
+                FAST_WHEEL_SPEED, SLOW_WHEEL_SPEED, REVERSE_DURATION, True
+            )
         self.params.set("current_action_status", "completed")
 
     def _straighten(self):

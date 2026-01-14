@@ -2,6 +2,8 @@ from behaviors.behaviors import Behaviour
 from utils.state import StateManager
 import time
 from utils.config import (
+    FAST_WHEEL_SPEED,
+    SLOW_WHEEL_SPEED,
     TURNING_TIME,
     SPEED_SLOW,
     PAN_LEFT,
@@ -81,7 +83,6 @@ class FindQR(Behaviour):
         last_rotonda_check = time.time()
 
         while not self.stopped():
-
             if (
                 not rotonda_detected
                 and (time.time() - last_rotonda_check) >= self.rotonda_check_interval
@@ -164,19 +165,28 @@ class FindQR(Behaviour):
                         if not self._is_moving:
                             self.robot.moveWheels(self.speed, self.speed)
                             self._is_moving = True
-                        self.robot.wait(0.2)
+                        self.robot.wait(0.1)
                         continue
 
             # if not centered, perform S-curve to center
             print("Performing S-curve maneuver to get closer to pillar...")
             self._is_moving = False
             if side == "left":
-                self.robot.moveWheelsByTime((-9), (-2), 2, True)
-                self.robot.moveWheelsByTime((-2), (-9), 2, True)
+                self.robot.moveWheelsByTime(
+                    (-FAST_WHEEL_SPEED), (-SLOW_WHEEL_SPEED), 2, True
+                )
+                self.robot.moveWheelsByTime(
+                    (-SLOW_WHEEL_SPEED), (-FAST_WHEEL_SPEED), 2, True
+                )
+                self.robot.wait(0.5)
             else:
-                self.robot.moveWheelsByTime((-2), (-9), 2, True)
-                self.robot.moveWheelsByTime((-9), (-2), 2, True)
-
+                self.robot.moveWheelsByTime(
+                    (-SLOW_WHEEL_SPEED), (-FAST_WHEEL_SPEED), 2, True
+                )
+                self.robot.moveWheelsByTime(
+                    (-FAST_WHEEL_SPEED), (-SLOW_WHEEL_SPEED), 2, True
+                )
+                self.robot.wait(0.5)
             print("Moving forward until centered...")
 
             # Move forward until centered
@@ -186,6 +196,7 @@ class FindQR(Behaviour):
             while True:
                 qr = self.robot.readQR()
                 if qr and qr.distance > 0:
+                    print(f"QR x position during centering: {qr.x} cm")
                     if self._qrIsCentered(QR_CENTER_TOLERANCE):
                         print("QR is now centered.")
                         self._is_moving = False
@@ -198,7 +209,7 @@ class FindQR(Behaviour):
                 self.robot.stopMotors()
                 break
 
-            self.robot.wait(0.2)
+            self.robot.wait(0.1)
 
     def _qrIsCentered(self, tolerance=QR_CENTER_TOLERANCE):
         """Check if the QR code is centered within a tolerance"""
@@ -223,25 +234,33 @@ class FindQR(Behaviour):
             return "left"  # Default to left if not found
 
     def _rotonda_check(self):
-        """Periodic check for 'rotonda' QR code"""
+        """Periodic check for 'rotonda' QR code - checks continuously for 1 second"""
         self.robot.movePanTo(0, PAN_MOVEMENT_SPEED, True)
 
         rotonda = False
-        qr = self.robot.readQR()
-        if qr and qr.id is not None and qr.distance is not None and qr.distance > 0:
-            distance = qr.distance
+        check_duration = 1.0  # seconds to keep checking
+        check_interval = 0.1  # time between checks
+        start_time = time.time()
 
-            if "rotonda" in qr.id:
-                print(
-                    f"[FindQR] Detected 'rotonda' QR at distance: {distance:.2f} cm during rotonda check"
-                )
-                if distance >= 50:
-                    print("[FindQR] Close enough! Performing 180-degree turn...")
-                    self.robot.sayText("Rotonda detected, turning around", True)
-                    self._perform_180_turn()
-                    self.params.set("rotonda_detected", True)
-                    rotonda = True
-                    time.sleep(SPEECH_WAIT_TIME)
+        while (time.time() - start_time) < check_duration:
+            qr = self.robot.readQR()
+            if qr and qr.id is not None and qr.distance is not None and qr.distance > 0:
+                distance = qr.distance
+
+                if "rotonda" in qr.id:
+                    print(
+                        f"[FindQR] Detected 'rotonda' QR at distance: {distance:.2f} cm during rotonda check"
+                    )
+                    if distance >= TARGET_DISTANCE_TO_PILLAR - 50:
+                        print("[FindQR] Close enough! Performing 180-degree turn...")
+                        self.robot.sayText("Rotonda detected, turning around", True)
+                        self._perform_180_turn()
+                        self.params.set("rotonda_detected", True)
+                        rotonda = True
+                        time.sleep(SPEECH_WAIT_TIME)
+                        break  # Exit loop once rotonda is detected and handled
+            self.robot.wait(check_interval)
+
         # Reorient camera to side
         side_of_parking = self._get_side()
         pan_angle = PAN_LEFT if side_of_parking == "left" else PAN_RIGHT

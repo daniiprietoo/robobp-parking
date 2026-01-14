@@ -18,7 +18,7 @@ class ScanSpots(Behaviour):
     def __init__(self, robot: Robobo, supress_list, params: StateManager):
         super().__init__(robot, supress_list, params)
 
-        self.max_spots = 2  # Maximum number of parking spots to scan
+        self.max_spots = 4  # Maximum number of parking spots to scan
 
     def take_control(self) -> bool:
         current_action = self.params.get("current_action")
