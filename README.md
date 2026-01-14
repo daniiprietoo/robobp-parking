@@ -73,5 +73,9 @@ QR_CENTER_TOLERANCE = 30
    python main.py
     ```
 
+## Changes Made for Real Robot
 
-10.20.27.237
+Adjustement of the movement speeds, timings and distances in `utils/config.py` to better suit the real robot's capabilities and environment.
+
+Also changed some parameters in the behaviors to better adjust to the real robot. The main being in `behaviors/scan_spots.py` where the maximum number of parking spots to scan was decreased from 8 to 4.
+Also changed the logic of moving the pan while searching for QR codes. Now it works with a timing system that helps the robot to better find the QR codes.
